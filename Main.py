@@ -58,10 +58,10 @@ except:
 merged = load_map_data(sub_df)
 
 with st.container(border=True):
-    col1, col2 = st.columns([1, 1])
+    col1, col2 = st.columns([1.1, 0.9])
 
     with col1:
-        with st.container(border=True):
+        with st.container(border=True, height='stretch'):
             st.write('DataFrame')
             try:
                 st.dataframe(sub_df)
@@ -73,10 +73,10 @@ with st.container(border=True):
         return f'{x:,.0f}'
 
     fig, ax = plt.subplots(figsize=(20, 4))
-    fig2, ax2 = plt.subplots(figsize=(18, 3))
+    fig2, ax2 = plt.subplots(figsize=(18, 4))
 
     with col2:
-        with st.container(border=True, height=480, vertical_alignment='center'):
+        with st.container(border=True, height='stretch', vertical_alignment='center'):
 
             st.write('Peta Sebaran Kasus TBC di Jawa Barat')
             map_data = load_map_data(sub_df)
@@ -99,11 +99,10 @@ with st.container(border=True):
     opt = sub_df.index.tolist()
     kab = st.selectbox('', options=opt, label_visibility="collapsed", placeholder='Pilih Kabupaten/Kota', index=None)
     if kab is not None:
-        c1, c2 = st.columns(2)
         kab_kecil = kab.lower().replace(" ", "")
-
+        with st.container(border=True, height='stretch'):
+            c1, c2 = st.columns([1.1, 0.9])
         with c1:
-            with st.container(border=True):
                 sub_df2 = sub_df[sub_df.index == kab]
                 st.markdown(f'## {kab}')
 
