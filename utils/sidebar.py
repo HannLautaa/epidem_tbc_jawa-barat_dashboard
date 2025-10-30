@@ -38,7 +38,7 @@ def sidebar():
             sel_ds = st.selectbox('Pilih Dataset', options=opt)
 
         if sel_ds == 'Default':
-            df = load_data(open('data/df.csv', 'rb').read(), 'csv')
+            df = load_data(open('data/df_final.csv', 'rb').read(), 'csv')
         else:
             name = st.session_state['uploaded_file_name']
             file_type = 'csv' if name.endswith('.csv') else 'xlsx'
