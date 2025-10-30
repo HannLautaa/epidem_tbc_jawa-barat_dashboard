@@ -4,12 +4,18 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import plotly.express as px
 # from utils.sidebar import sidebar
+import json
 
 st.set_page_config(layout='wide')
+st.title("Analisis Epidemiologi Kasus TBC di Jawa Barat")
 
 @st.cache_data
 def load_data():
-    return pd.read_csv('data/df_final.csv', index_col=0)
+    data = pd.read_csv('data/df_final.csv')
+    data['kabupaten/kota'] = data['kabupaten/kota'].apply(lambda x: 'DEPOK' if x == 'KOTA DEPOK' else 'CIMAHI' if x == 'KOTA CIMAHI' else 'BANJAR' if x == 'KOTA BANJAR' else x)
+    data.set_index('kabupaten/kota', inplace=True)
+    return data
+    
 
 # with c1:
 with st.sidebar:
@@ -74,9 +80,9 @@ a_df['PD_%'] = (a_df['prev_laki-laki_prop'] - a_df['prev_perempuan_prop']) * 100
 
 merged = load_map_data(sub_df)
 
-list_tabs = ['Main', 'Visual', 'Maps & Ukuran Epidemiologi']
+list_tabs = ['📋 Main', '🔍 Eksplor Kabupaten/Kota', '📊 Chart', '📈 Ukuran Epidemiologi']
 with st.container(horizontal=True, horizontal_alignment='center'):
-    tab1, tab2, tab3 = st.tabs(list_tabs)
+    tab1, tab4, tab2, tab3 = st.tabs(list_tabs)
 
 with tab1:
     c1, c2 = st.columns([1, 1])
@@ -87,7 +93,7 @@ with tab1:
         with st.container(border=True):
             st.markdown(f"<h3 style='text-align:center;'>Laki-laki</h3>", unsafe_allow_html=True)
             st.markdown(f"<h3 style='text-align:center;'>{format_number(sub_df['kasus_laki-laki'].mean())}</h3>", unsafe_allow_html=True)
-            st.divider()
+            # st.divider()
             c111, c112 = st.columns([1, 1])
             with c111:
                 st.markdown(f"<h4 style='text-align:center;'>Tertinggi</h4>", unsafe_allow_html=True)
@@ -99,7 +105,7 @@ with tab1:
         with st.container(border=True):
             st.markdown(f"<h3 style='text-align:center;'>Perempuan</h3>", unsafe_allow_html=True)
             st.markdown(f"<h3 style='text-align:center;'>{format_number(sub_df['kasus_perempuan'].mean())}</h3>", unsafe_allow_html=True)
-            st.divider()
+            # st.divider()
             c121, c122 = st.columns([1, 1])
             with c121:
                 st.markdown(f"<h4 style='text-align:center;'>Tertinggi</h4>", unsafe_allow_html=True)
@@ -108,6 +114,36 @@ with tab1:
                 st.markdown(f"<h4 style='text-align:center;'>Terendah</h4>", unsafe_allow_html=True)
                 st.markdown(f"<h5 style='text-align:center;'>{sub_df[sub_df['kasus_perempuan'] == sub_df['kasus_perempuan'].min()].index.values[0]} ({format_number(sub_df[sub_df['kasus_perempuan'] == sub_df['kasus_perempuan'].min()]['kasus_perempuan'].values[0])})</h5>", unsafe_allow_html=True)
 
+    merged_data = load_map_data(sub_df)
+    merged_data = merged_data.set_index("NAME_2")
+    # geojson_data = merged_data.__geo_interface__
+    geojson_data = json.loads(merged_data.to_json())
+    with st.container(border=True):
+        st.markdown(f"<h3 style='text-align:center;'>Peta TBC Jawa Barat</h3>", unsafe_allow_html=True)
+        # ===== Choropleth =====
+        fig = px.choropleth(
+            merged_data,
+            geojson=geojson_data,
+            locations=merged_data.index,
+            color='jumlah kasus',
+            hover_name=merged_data.index,
+            hover_data={
+                'Kasus Laki-laki': merged_data['kasus_laki-laki'],
+                'Kasus Perempuan': merged_data['kasus_perempuan'],
+                # merged_data.index: False
+            },
+            color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
+            # labels={prevalence_var: 'Prevalence (per 100k)'}
+        )
+        # fig.update_geos(center={"lat": -2.5, "lon": 118})
+        fig.update_geos(fitbounds="locations", visible=False)
+        fig.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
+        
+        st.plotly_chart(fig, use_container_width=True, config={'scrollZoom':False})
+    
+    st.info("💡 Tip: Interactive map with zoom/pan. Hover to see details. Yellow = Low risk, Orange-Red = High risk.")
+
+with tab4:
     fig, ax = plt.subplots(figsize=(20, 4))
     fig2, ax2 = plt.subplots(figsize=(18, 4))
     # with st.container(border=True):
