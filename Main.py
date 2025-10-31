@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 # from utils.sidebar import sidebar
 import json
+from PIL import Image
+import matplotlib.colors as mcolors
 
 st.set_page_config(layout='wide')
 st.title("Analisis Epidemiologi Kasus TBC di Jawa Barat")
@@ -35,14 +37,14 @@ def load_map_data(df):
     merged = gdf.merge(df, left_on='NAME_2', right_index=True)
     return merged
 
-def map(map_data):
+def map(map_data, cmap):
     col_awal = st.selectbox('', options=['JUMLAH KASUS', 'JUMLAH POPULASI'], label_visibility='collapsed', key='selectbox_main')
     col_awal = col_awal.lower()
     # st.write('Peta Sebaran Kasus TBC di Jawa Barat')
     map_data = load_map_data(sub_df)
     map_data.plot(
         ax=ax,
-        cmap='YlOrRd',
+        cmap=cmap,
         legend=True,
         column=col_awal,
         edgecolor='black',
@@ -65,6 +67,7 @@ def bar_chart(df, expand=True):
             tipe = tipe.lower()
             st.bar_chart(df[[f'{tipe}_laki-laki', f'{tipe}_perempuan']], stack=False)
 
+ahe = Image.open('data/ahe.jpeg')
 df = load_data()
 sub_df = df[df['tahun'] == t]
 a_df = sub_df.copy()
@@ -80,7 +83,13 @@ a_df['PD_%'] = (a_df['prev_laki-laki_prop'] - a_df['prev_perempuan_prop']) * 100
 
 merged = load_map_data(sub_df)
 
-list_tabs = ['📋 Main', '🔍 Eksplor Kabupaten/Kota', '📊 Chart', '📈 Ukuran Epidemiologi']
+
+cmap = mcolors.LinearSegmentedColormap.from_list("custom_blue", [
+    '#E5F0FF', '#A8D0F0', '#4A90E2', '#003366'
+])
+
+
+list_tabs = ['📋 Main', '🔍 Kabupaten/Kota', '📊 Chart', '📈 Ukuran Epidemiologi']
 with st.container(horizontal=True, horizontal_alignment='center'):
     tab1, tab4, tab2, tab3 = st.tabs(list_tabs)
 
@@ -119,7 +128,7 @@ with tab1:
     # geojson_data = merged_data.__geo_interface__
     geojson_data = json.loads(merged_data.to_json())
     with st.container(border=True):
-        st.markdown(f"<h3 style='text-align:center;'>Peta TBC Jawa Barat</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='text-align:center;'>Sebaran Kasus TBC Jawa Barat (L & P)</h3>", unsafe_allow_html=True)
         # ===== Choropleth =====
         fig = px.choropleth(
             merged_data,
@@ -132,16 +141,19 @@ with tab1:
                 'Kasus Perempuan': merged_data['kasus_perempuan'],
                 # merged_data.index: False
             },
-            color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
+            # color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
             # labels={prevalence_var: 'Prevalence (per 100k)'}
         )
         # fig.update_geos(center={"lat": -2.5, "lon": 118})
         fig.update_geos(fitbounds="locations", visible=False)
-        fig.update_layout(height=400, margin={"r":0,"t":0,"l":0,"b":0})
+        fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0})
         
         st.plotly_chart(fig, use_container_width=True, config={'scrollZoom':False})
     
-    st.info("💡 Tip: Interactive map with zoom/pan. Hover to see details. Yellow = Low risk, Orange-Red = High risk.")
+    # st.info("💡 Tip: Interactive map with zoom/pan. Hover to see details. Yellow = Low risk, Orange-Red = High risk.")
+    # with st.container(border=True):
+    with st.expander('Agent-Host-Environment'):
+        st.image(ahe, use_container_width=True)
 
 with tab4:
     fig, ax = plt.subplots(figsize=(20, 4))
@@ -184,7 +196,7 @@ with tab4:
                 map_data = map_data[map_data['NAME_2'] == kab_kecil]
                 map_data.plot(
                     ax=ax2,
-                    cmap='YlOrRd',
+                    cmap=cmap,
                     legend=True,
                     column=col,
                     edgecolor='black',
@@ -211,7 +223,7 @@ with tab4:
         with col2:
             with st.container(border=True, height='stretch', vertical_alignment='center'):
                 map_data = load_map_data(sub_df)
-                map(map_data)
+                map(map_data, cmap)
 
 
 with tab2:
@@ -219,25 +231,30 @@ with tab2:
         # tipe = st.selectbox('Pilih Kasus / Populasi', options=['KASUS', 'POPULASI'])
         # tipe = tipe.lower()
         for tipe in ['kasus', 'populasi']:
-            c1, c2 = st.columns([1, 1])
-            with c1:
-                with st.container(border=True, height='stretch'):
-                    st.markdown(f"<h3 style='text-align:center;'>Bar Chart {tipe.upper()}</h3>", unsafe_allow_html=True)
-                    st.bar_chart(df[[f'{tipe}_laki-laki', f'{tipe}_perempuan']], stack=False)
+            with st.container(border=True):
+                c1, c2 = st.columns([1, 1])
+                with c1:
+                    with st.container(border=True, height='stretch'):
+                        st.markdown(f"<h3 style='text-align:center;'>Bar Chart {tipe.upper()}</h3>", unsafe_allow_html=True)
+                        st.bar_chart(df[[f'{tipe}_laki-laki', f'{tipe}_perempuan']], stack=False)
 
-            with c2:
+                with c2:
+                    with st.container(border=True):
+                        st.markdown(f"<h3 style='text-align:center;'>Proporsi {tipe.upper()} Laki-laki dan Perempuan</h3>", unsafe_allow_html=True)
+                        val_1 = df[f'{tipe}_laki-laki'].sum()
+                        val_2 = df[f'{tipe}_perempuan'].sum()
+                        piedf = pd.DataFrame({'Jenis Kelamin': ['Laki-laki', 'Perempuan'], 'Total': [val_1, val_2]})
+                        pie = px.pie(
+                            piedf, values='Total', names='Jenis Kelamin',
+                            color='Jenis Kelamin',
+                            hole=0.4
+                        )
+                        pie.update_layout(height=400)
+                        st.plotly_chart(pie)
                 with st.container(border=True):
-                    st.markdown(f"<h3 style='text-align:center;'>Proporsi {tipe.upper()} Laki-laki dan Perempuan</h3>", unsafe_allow_html=True)
-                    val_1 = df[f'{tipe}_laki-laki'].sum()
-                    val_2 = df[f'{tipe}_perempuan'].sum()
-                    piedf = pd.DataFrame({'Jenis Kelamin': ['Laki-laki', 'Perempuan'], 'Total': [val_1, val_2]})
-                    pie = px.pie(
-                        piedf, values='Total', names='Jenis Kelamin',
-                        color='Jenis Kelamin',
-                        hole=0.4
-                    )
-                    pie.update_layout(height=400)
-                    st.plotly_chart(pie)
+                    st.markdown(f"<h3 style='text-align:center;'>Histogram Jumlah {tipe.upper()} (L + P)</h3>", unsafe_allow_html=True)
+                    hist = px.histogram(map_data, x=f'jumlah {tipe}', nbins=20)
+                    st.plotly_chart(hist)
 
 with tab3:
     with st.expander('Dataframe Hasil Analisis'):
