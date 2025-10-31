@@ -159,6 +159,16 @@ with tab1:
     # with st.container(border=True):
     with st.expander('Statistik Deskriptif'):
         st.dataframe(sub_df.drop(columns='tahun').describe())
+        st.write('Jumlah')
+        st.dataframe(sub_df.drop(columns='tahun').sum().to_frame().T.style.format('{:,.0f}'))
+        # st.dataframe(
+        #     sub_df.drop(columns='tahun').sum().to_frame().T,
+        #     column_config={
+        #         col: st.column_config.NumberColumn(format="%,.0f")
+        #         for col in sub_df.columns if col != "tahun"
+        #     }
+        # )
+
     l1, l2 = st.columns([1, 1])
     with l1:
         with st.expander('LISA'):
@@ -292,7 +302,7 @@ with tab3:
                 st.write(f'##### Tertinggi: {p_max_perempuan.index.values[0]} ({p_max_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
                 st.write(f'##### Terendah: {p_min_perempuan.index.values[0]} ({p_min_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
     with st.container(border=True):
-        st.markdown('#### Odds Ratio')
+        st.markdown('#### Prevalensi Odds Ratio')
         or_max = a_df[a_df['POR'] == a_df['POR'].max()]
         or_min = a_df[a_df['POR'] == a_df['POR'].min()]
         with st.container(border=False, horizontal=True):
