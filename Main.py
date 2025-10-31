@@ -29,8 +29,11 @@ st.title(f"Analisis Epidemiologi Kasus TBC di Jawa Barat Tahun {t}")
 def load_map_data(df):
     df.index = df.index.str.replace(' ', '', regex=False)
     df.index = df.index.str.lower()
-    df['jumlah kasus'] = df['kasus_laki-laki'] + df['kasus_perempuan']
-    df['jumlah populasi'] = df['populasi_laki-laki'] + df['populasi_perempuan']
+    try:
+        df['jumlah kasus'] = df['kasus_laki-laki'] + df['kasus_perempuan']
+        df['jumlah populasi'] = df['populasi_laki-laki'] + df['populasi_perempuan']
+    except:
+        pass
 
     gdf = gpd.read_file('data/gadm41_IDN_2.json')
     gdf = gdf[gdf['NAME_1'] == 'JawaBarat']
@@ -154,6 +157,8 @@ with tab1:
     
     # st.info("💡 Tip: Interactive map with zoom/pan. Hover to see details. Yellow = Low risk, Orange-Red = High risk.")
     # with st.container(border=True):
+    with st.expander('Statistik Deskriptif'):
+        st.dataframe(sub_df.drop(columns='tahun').describe())
     l1, l2 = st.columns([1, 1])
     with l1:
         with st.expander('LISA'):
@@ -300,6 +305,34 @@ with tab3:
         with st.container(border=False, horizontal=True):
             st.write(f'##### Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
             st.write(f'##### Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
+
+    a_df['prevalensi_total'] = a_df['prevalensi_laki-laki'] + a_df['prevalensi_perempuan']
+    merged_data = load_map_data(a_df)
+    merged_data = merged_data.set_index("NAME_2")
+    # geojson_data = merged_data.__geo_interface__
+    geojson_data = json.loads(merged_data.to_json())
+    with st.container(border=True):
+        st.markdown(f"<h3 style='text-align:center;'>Prevalensi (L & P)</h3>", unsafe_allow_html=True)
+        # ===== Choropleth =====
+        fig = px.choropleth(
+            merged_data,
+            geojson=geojson_data,
+            locations=merged_data.index,
+            color='prevalensi_total',
+            hover_name=merged_data.index,
+            hover_data={
+                'Prev Laki-laki': merged_data['prevalensi_laki-laki'],
+                'Prev Perempuan': merged_data['prevalensi_perempuan'],
+                # merged_data.index: False
+            },
+            # color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
+            # labels={prevalence_var: 'Prevalence (per 100k)'}
+        )
+        # fig.update_geos(center={"lat": -2.5, "lon": 118})
+        fig.update_geos(fitbounds="locations", visible=False)
+        fig.update_layout(height=600, margin={"r":0,"t":0,"l":0,"b":0})
+        
+        st.plotly_chart(fig, use_container_width=True, config={'scrollZoom':False})
 
     with st.expander('Dataframe Hasil Analisis'):
         a_df
