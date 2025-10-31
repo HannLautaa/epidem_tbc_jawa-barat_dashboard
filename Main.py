@@ -7,6 +7,7 @@ import plotly.express as px
 import json
 from PIL import Image
 import matplotlib.colors as mcolors
+from utils.LISA import lisa_map, lisa_map_cluster
 
 st.set_page_config(layout='wide')
 
@@ -153,8 +154,14 @@ with tab1:
     
     # st.info("💡 Tip: Interactive map with zoom/pan. Hover to see details. Yellow = Low risk, Orange-Red = High risk.")
     # with st.container(border=True):
-    with st.expander('Agent-Host-Environment'):
-        st.image(ahe, use_container_width=True)
+    l1, l2 = st.columns([1, 1])
+    with l1:
+        with st.expander('LISA'):
+            lisa_map()
+
+    with l2:
+        with st.expander('Cluster'):
+            lisa_map_cluster()
 
 with tab4:
     fig, ax = plt.subplots(figsize=(20, 4))
@@ -293,5 +300,8 @@ with tab3:
         with st.container(border=False, horizontal=True):
             st.write(f'##### Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
             st.write(f'##### Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
+
     with st.expander('Dataframe Hasil Analisis'):
         a_df
+    with st.expander('Agent-Host-Environment'):
+        st.image(ahe, use_container_width=True)
