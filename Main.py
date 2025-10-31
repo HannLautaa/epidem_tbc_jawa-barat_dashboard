@@ -9,7 +9,6 @@ from PIL import Image
 import matplotlib.colors as mcolors
 
 st.set_page_config(layout='wide')
-st.title("Analisis Epidemiologi Kasus TBC di Jawa Barat")
 
 @st.cache_data
 def load_data():
@@ -23,6 +22,7 @@ def load_data():
 with st.sidebar:
     t = st.selectbox('Pilih Tahun', options=[2024, 2023, 2022, 2021, 2020, 2019])
     st.divider()
+st.title(f"Analisis Epidemiologi Kasus TBC di Jawa Barat Tahun {t}")
 
 @st.cache_data
 def load_map_data(df):
@@ -71,15 +71,16 @@ ahe = Image.open('data/ahe.jpeg')
 df = load_data()
 sub_df = df[df['tahun'] == t]
 a_df = sub_df.copy()
-a_df['prevalensi_laki-laki'] = a_df['kasus_laki-laki'] + a_df['populasi_laki-laki']
-a_df['prevalensi_perempuan'] = a_df['kasus_perempuan'] + a_df['populasi_perempuan']
+a_df['prevalensi_laki-laki'] = (a_df['kasus_laki-laki'] / a_df['populasi_laki-laki']) * 100
+a_df['prevalensi_perempuan'] = (a_df['kasus_perempuan'] / a_df['populasi_perempuan']) * 100
 a_df['prev_laki-laki_prop'] = a_df['kasus_laki-laki'] / a_df['populasi_laki-laki']
 a_df['prev_perempuan_prop'] = a_df['kasus_perempuan'] / a_df['populasi_perempuan']
 a_df['PR'] = a_df['prev_laki-laki_prop'] / a_df['prev_perempuan_prop']
 odds_male = a_df['prev_laki-laki_prop'] / (1 - a_df['prev_laki-laki_prop'])
 odds_female = a_df['prev_perempuan_prop'] / (1 - a_df['prev_perempuan_prop'])
 a_df['POR'] = odds_male / odds_female
-a_df['PD_%'] = (a_df['prev_laki-laki_prop'] - a_df['prev_perempuan_prop']) * 100
+a_df['PD_%'] = abs((a_df['prev_laki-laki_prop'] - a_df['prev_perempuan_prop']) * 100)
+a_df = a_df[['prevalensi_laki-laki', 'prevalensi_perempuan', 'PR', 'POR', 'PD_%']]
 
 merged = load_map_data(sub_df)
 
@@ -96,12 +97,12 @@ with st.container(horizontal=True, horizontal_alignment='center'):
 with tab1:
     c1, c2 = st.columns([1, 1])
     # with st.container(border=True):
-    st.markdown(f"<h2 style='text-align:center;'>Rata-rata Kasus TBC</h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='text-align:center;'>Rata-rata Kasus TBC Jawa Barat</h2>", unsafe_allow_html=True)
     c11, c12 = st.columns([1, 1])
     with c11:
         with st.container(border=True):
-            st.markdown(f"<h3 style='text-align:center;'>Laki-laki</h3>", unsafe_allow_html=True)
-            st.markdown(f"<h3 style='text-align:center;'>{format_number(sub_df['kasus_laki-laki'].mean())}</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align:center;'>Laki-laki</h4>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align:center;'>{format_number(sub_df['kasus_laki-laki'].mean())}</h4>", unsafe_allow_html=True)
             # st.divider()
             c111, c112 = st.columns([1, 1])
             with c111:
@@ -112,8 +113,8 @@ with tab1:
                 st.markdown(f"<h5 style='text-align:center;'>{sub_df[sub_df['kasus_laki-laki'] == sub_df['kasus_laki-laki'].min()].index.values[0]} ({format_number(sub_df[sub_df['kasus_laki-laki'] == sub_df['kasus_laki-laki'].min()]['kasus_laki-laki'].values[0])})</h5>", unsafe_allow_html=True)
     with c12:
         with st.container(border=True):
-            st.markdown(f"<h3 style='text-align:center;'>Perempuan</h3>", unsafe_allow_html=True)
-            st.markdown(f"<h3 style='text-align:center;'>{format_number(sub_df['kasus_perempuan'].mean())}</h3>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align:center;'>Perempuan</h4>", unsafe_allow_html=True)
+            st.markdown(f"<h4 style='text-align:center;'>{format_number(sub_df['kasus_perempuan'].mean())}</h4>", unsafe_allow_html=True)
             # st.divider()
             c121, c122 = st.columns([1, 1])
             with c121:
@@ -257,5 +258,40 @@ with tab2:
                     st.plotly_chart(hist)
 
 with tab3:
+    with st.container(border=True):
+        # st.markdown(f"<h5 style='text-align:center;'>Prevalensi</h5>", unsafe_allow_html=True)
+        st.markdown('#### Prevalensi')
+        p_max_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].max()]
+        p_min_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].min()]
+        p_max_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].max()]
+        p_min_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].min()]
+        c1, c2 = st.columns([1, 1])
+        with c1:
+            # st.markdown(f"<p style='text-align:center;'>Laki-laki</p>", unsafe_allow_html=True)
+            st.write('##### Laki-laki')
+            with st.container(border=False, horizontal=True):
+                st.write(f'##### Tertinggi: {p_max_laki.index.values[0]} ({p_max_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
+                st.write(f'##### Terendah: {p_min_laki.index.values[0]} ({p_min_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
+                
+        with c2:
+            # st.markdown(f"<p style='text-align:center;'>Laki-laki</p>", unsafe_allow_html=True)
+            st.write('##### Perempuan')
+            with st.container(border=False, horizontal=True):
+                st.write(f'##### Tertinggi: {p_max_perempuan.index.values[0]} ({p_max_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
+                st.write(f'##### Terendah: {p_min_perempuan.index.values[0]} ({p_min_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
+    with st.container(border=True):
+        st.markdown('#### Odds Ratio')
+        or_max = a_df[a_df['POR'] == a_df['POR'].max()]
+        or_min = a_df[a_df['POR'] == a_df['POR'].min()]
+        with st.container(border=False, horizontal=True):
+            st.write(f'##### Tertinggi: {or_max.index.values[0]} ({or_max['POR'].values[0]:.2f} %)')
+            st.write(f'##### Terendah: {or_min.index.values[0]} ({or_min['POR'].values[0]:.2f} %)')
+    with st.container(border=True):
+        st.markdown('#### Prevalensi Difference')
+        pd_max = a_df[a_df['PD_%'] == a_df['PD_%'].max()]
+        pd_min = a_df[a_df['PD_%'] == a_df['PD_%'].min()]
+        with st.container(border=False, horizontal=True):
+            st.write(f'##### Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
+            st.write(f'##### Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
     with st.expander('Dataframe Hasil Analisis'):
         a_df
