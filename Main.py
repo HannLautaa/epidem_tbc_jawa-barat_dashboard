@@ -80,8 +80,10 @@ a_df['prevalensi_perempuan'] = (a_df['kasus_perempuan'] / a_df['populasi_perempu
 a_df['prev_laki-laki_prop'] = a_df['kasus_laki-laki'] / a_df['populasi_laki-laki']
 a_df['prev_perempuan_prop'] = a_df['kasus_perempuan'] / a_df['populasi_perempuan']
 a_df['PR'] = a_df['prev_laki-laki_prop'] / a_df['prev_perempuan_prop']
-odds_male = a_df['prev_laki-laki_prop'] / (1 - a_df['prev_laki-laki_prop'])
-odds_female = a_df['prev_perempuan_prop'] / (1 - a_df['prev_perempuan_prop'])
+# odds_male = a_df['prev_laki-laki_prop'] / (1 - a_df['prev_laki-laki_prop'])
+# odds_female = a_df['prev_perempuan_prop'] / (1 - a_df['prev_perempuan_prop'])
+odds_male = a_df['prevalensi_laki-laki'] / (1 - a_df['prevalensi_laki-laki'])
+odds_female = a_df['prevalensi_perempuan'] / (1- a_df['prevalensi_perempuan'])
 a_df['POR'] = odds_male / odds_female
 a_df['PD_%'] = abs((a_df['prev_laki-laki_prop'] - a_df['prev_perempuan_prop']) * 100)
 a_df = a_df[['prevalensi_laki-laki', 'prevalensi_perempuan', 'PR', 'POR', 'PD_%']]
@@ -89,8 +91,16 @@ a_df = a_df[['prevalensi_laki-laki', 'prevalensi_perempuan', 'PR', 'POR', 'PD_%'
 merged = load_map_data(sub_df)
 
 
-cmap = mcolors.LinearSegmentedColormap.from_list("custom_blue", [
-    '#E5F0FF', '#A8D0F0', '#4A90E2', '#003366'
+# cmap = mcolors.LinearSegmentedColormap.from_list("custom_blue", [
+#     '#E5F0FF', '#A8D0F0', '#4A90E2', '#003366'
+# ])
+
+cmap = mcolors.LinearSegmentedColormap.from_list("custom_green", [
+    '#E6EE9C',  # light yellow-green
+    '#DCE775',  # lime green
+    '#AED581',  # light green
+    '#81C784',  # medium green
+    '#4CAF50'   # deep green
 ])
 
 
@@ -147,6 +157,8 @@ with tab1:
                 # merged_data.index: False
             },
             # color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
+            color_continuous_scale=['#E6EE9C', '#DCE775', '#AED581', '#81C784', '#4CAF50']
+
             # labels={prevalence_var: 'Prevalence (per 100k)'}
         )
         # fig.update_geos(center={"lat": -2.5, "lon": 118})
@@ -280,41 +292,41 @@ with tab2:
                     st.plotly_chart(hist)
 
 with tab3:
-    with st.container(border=True):
-        # st.markdown(f"<h5 style='text-align:center;'>Prevalensi</h5>", unsafe_allow_html=True)
-        st.markdown('#### Prevalensi')
-        p_max_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].max()]
-        p_min_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].min()]
-        p_max_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].max()]
-        p_min_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].min()]
-        c1, c2 = st.columns([1, 1])
-        with c1:
-            # st.markdown(f"<p style='text-align:center;'>Laki-laki</p>", unsafe_allow_html=True)
-            st.write('##### Laki-laki')
-            with st.container(border=False, horizontal=True):
-                st.write(f'##### Tertinggi: {p_max_laki.index.values[0]} ({p_max_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
-                st.write(f'##### Terendah: {p_min_laki.index.values[0]} ({p_min_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
-                
-        with c2:
-            # st.markdown(f"<p style='text-align:center;'>Laki-laki</p>", unsafe_allow_html=True)
-            st.write('##### Perempuan')
-            with st.container(border=False, horizontal=True):
-                st.write(f'##### Tertinggi: {p_max_perempuan.index.values[0]} ({p_max_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
-                st.write(f'##### Terendah: {p_min_perempuan.index.values[0]} ({p_min_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
-    with st.container(border=True):
-        st.markdown('#### Prevalensi Odds Ratio')
-        or_max = a_df[a_df['POR'] == a_df['POR'].max()]
-        or_min = a_df[a_df['POR'] == a_df['POR'].min()]
-        with st.container(border=False, horizontal=True):
-            st.write(f'##### Tertinggi: {or_max.index.values[0]} ({or_max['POR'].values[0]:.2f} %)')
-            st.write(f'##### Terendah: {or_min.index.values[0]} ({or_min['POR'].values[0]:.2f} %)')
-    with st.container(border=True):
-        st.markdown('#### Prevalensi Difference')
-        pd_max = a_df[a_df['PD_%'] == a_df['PD_%'].max()]
-        pd_min = a_df[a_df['PD_%'] == a_df['PD_%'].min()]
-        with st.container(border=False, horizontal=True):
-            st.write(f'##### Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
-            st.write(f'##### Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
+    c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
+    p_max_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].max()]
+    p_min_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].min()]
+    p_max_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].max()]
+    p_min_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].min()]
+    with c1:
+        with st.container(border=True):
+            st.markdown('#### Prevalensi Laki-Laki')
+            with st.container(border=False, horizontal=False):
+                st.write(f'Tertinggi: {p_max_laki.index.values[0]} ({p_max_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
+                st.write(f'Terendah: {p_min_laki.index.values[0]} ({p_min_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
+            
+    with c2:
+        with st.container(border=True):
+            st.markdown('#### Prevalensi Perempuan')
+            with st.container(border=False, horizontal=False):
+                st.write(f'Tertinggi: {p_max_perempuan.index.values[0]} ({p_max_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
+                st.write(f'Terendah: {p_min_perempuan.index.values[0]} ({p_min_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
+        
+    with c3:
+        with st.container(border=True):
+            st.markdown('#### Prevalensi Odds Ratio')
+            or_max = a_df[a_df['POR'] == a_df['POR'].max()]
+            or_min = a_df[a_df['POR'] == a_df['POR'].min()]
+            with st.container(border=False, horizontal=False):
+                st.write(f'Tertinggi: {or_max.index.values[0]} ({or_max['POR'].values[0]:.2f} %)')
+                st.write(f'Terendah: {or_min.index.values[0]} ({or_min['POR'].values[0]:.2f} %)')
+    with c4:
+        with st.container(border=True):
+            st.markdown('#### Prevalensi Difference')
+            pd_max = a_df[a_df['PD_%'] == a_df['PD_%'].max()]
+            pd_min = a_df[a_df['PD_%'] == a_df['PD_%'].min()]
+            with st.container(border=False, horizontal=False):
+                st.write(f'Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
+                st.write(f'Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
 
     a_df['prevalensi_total'] = a_df['prevalensi_laki-laki'] + a_df['prevalensi_perempuan']
     merged_data = load_map_data(a_df)
@@ -336,6 +348,8 @@ with tab3:
                 # merged_data.index: False
             },
             # color_continuous_scale=['#FFEB3B', '#FFC107', '#FF9800', '#FF5722', '#F44336'],
+            color_continuous_scale=['#E6EE9C', '#DCE775', '#AED581', '#81C784', '#4CAF50']
+
             # labels={prevalence_var: 'Prevalence (per 100k)'}
         )
         # fig.update_geos(center={"lat": -2.5, "lon": 118})
@@ -344,7 +358,10 @@ with tab3:
         
         st.plotly_chart(fig, use_container_width=True, config={'scrollZoom':False})
 
-    with st.expander('Dataframe Hasil Analisis'):
-        a_df
-    with st.expander('Agent-Host-Environment'):
-        st.image(ahe, use_container_width=True)
+    c1, c2 = st.columns([1, 1])
+    with c1:
+        with st.expander('Dataframe Hasil Analisis'):
+            a_df
+    with c2:
+        with st.expander('Agent-Host-Environment'):
+            st.image(ahe, use_container_width=True)
