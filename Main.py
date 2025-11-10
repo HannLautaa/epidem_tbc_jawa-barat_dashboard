@@ -21,7 +21,7 @@ def load_data():
 
 # with c1:
 with st.sidebar:
-    t = st.selectbox('Pilih Tahun', options=[2024, 2023, 2022, 2021, 2020, 2019])
+    t = st.selectbox('Pilih Tahun', options=[2024, 2023, 2022, 2021, 2020])
     st.divider()
 st.title(f"Analisis Epidemiologi Kasus TBC di Jawa Barat Tahun {t}")
 
