@@ -303,6 +303,7 @@ with tab3:
             with st.container(border=False, horizontal=False):
                 st.write(f'Tertinggi: {p_max_laki.index.values[0]} ({p_max_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
                 st.write(f'Terendah: {p_min_laki.index.values[0]} ({p_min_laki['prevalensi_laki-laki'].values[0]:.2f} %)')
+
             
     with c2:
         with st.container(border=True):
@@ -310,7 +311,7 @@ with tab3:
             with st.container(border=False, horizontal=False):
                 st.write(f'Tertinggi: {p_max_perempuan.index.values[0]} ({p_max_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
                 st.write(f'Terendah: {p_min_perempuan.index.values[0]} ({p_min_perempuan['prevalensi_perempuan'].values[0]:.2f} %)')
-        
+
     with c3:
         with st.container(border=True):
             st.markdown('#### Prevalensi Odds Ratio')
@@ -328,6 +329,9 @@ with tab3:
                 st.write(f'Tertinggi: {pd_max.index.values[0]} ({pd_max['PD_%'].values[0]:.2f} %)')
                 st.write(f'Terendah: {pd_min.index.values[0]} ({pd_min['PD_%'].values[0]:.2f} %)')
 
+    with st.expander('Rumus Perhitungan'):
+        st.latex(r'\text{Prevalensi} = \left( \frac{\text{Jumlah Kasus}}{\text{Jumlah Populasi}} \right) \times 100')
+        # st.latex(r)
     a_df['prevalensi_total'] = a_df['prevalensi_laki-laki'] + a_df['prevalensi_perempuan']
     merged_data = load_map_data(a_df)
     merged_data = merged_data.set_index("NAME_2")
