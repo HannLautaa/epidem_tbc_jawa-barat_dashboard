@@ -292,7 +292,8 @@ with tab2:
                     st.plotly_chart(hist)
 
 with tab3:
-    c1, c2, c3, c4 = st.columns([1, 1, 1, 1])
+    c1, c2 = st.columns([1, 1])
+    c3, c4 = st.columns([1, 1])
     p_max_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].max()]
     p_min_laki = a_df[a_df['prevalensi_laki-laki'] == a_df['prevalensi_laki-laki'].min()]
     p_max_perempuan = a_df[a_df['prevalensi_perempuan'] == a_df['prevalensi_perempuan'].max()]
