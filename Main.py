@@ -23,7 +23,7 @@ def load_data():
 with st.sidebar:
     t = st.selectbox('Pilih Tahun', options=[2024, 2023, 2022, 2021, 2020])
     st.divider()
-st.title(f"Analisis Epidemiologi Kasus TBC di Jawa Barat Tahun {t}")
+st.title(f"Dashboard Kasus TBC di Jawa Barat Tahun {t}")
 
 @st.cache_data
 def load_map_data(df):
