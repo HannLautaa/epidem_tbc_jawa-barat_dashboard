@@ -2,7 +2,7 @@
 
 ## Description
 
-Dashboard TBC Jawa Barat dengan analsis epidemiologi
+Dashboard TBC Jawa Barat dengan analsis spasial dan epidemiologi
 
 ## Dashboard Link
 
